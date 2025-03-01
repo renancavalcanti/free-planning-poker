@@ -1,0 +1,15 @@
+<div class="card" 
+     [class.selected]="selected"
+     [class.revealed]="revealed" 
+     (click)="selectCard()">
+  <div class="card-inner">
+    <div class="card-front">
+      <div class="card-back-content">
+        <div class="logo">{{ card.displayValue || card.value }}</div>
+      </div>
+      <div class="card-front-content">
+        <span class="card-value">{{ card.displayValue || card.value }}</span>
+      </div>
+    </div>
+  </div>
+</div> 

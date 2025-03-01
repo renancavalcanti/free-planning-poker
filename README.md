@@ -1,59 +1,128 @@
-# FreePlanningPoker
+# Free Planning Poker
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 19.1.7.
+A modern Planning Poker application built with Angular, Firebase Real-time Database, and Three.js for 3D components.
 
-## Development server
+## Features
 
-To start a local development server, run:
+- Create or join Planning Poker sessions with real-time collaboration
+- Standard Planning Poker decks (Fibonacci, Modified Fibonacci, T-Shirt sizes, Powers of 2)
+- Create custom decks with your own values
+- 3D card visualization with Three.js
+- Real-time updates of voting status
+- Reveal cards and view voting results
+- Mobile-friendly responsive design
+
+## Technology Stack
+
+- **Angular** (latest version) for the frontend
+- **Firebase Real-time Database** for real-time data synchronization
+- **Three.js** for 3D card visualization
+- **SCSS** for styling
+
+## Setup and Configuration
+
+### Prerequisites
+
+- Node.js (v14 or later)
+- npm (v6 or later)
+- Angular CLI
+
+### Installation
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/your-username/free-planning-poker.git
+   cd free-planning-poker
+   ```
+
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+3. Configure Firebase:
+   - Create a Firebase project at [https://console.firebase.google.com/](https://console.firebase.google.com/)
+   - Enable the Real-time Database
+   - Set up authentication if you want to add user login
+   - Get your Firebase configuration from Project Settings
+   - Update the environment files (`src/environments/environment.ts` and `src/environments/environment.prod.ts`) with your Firebase configuration
+
+   ```typescript
+   export const environment = {
+     production: false, // or true for production
+     firebase: {
+       apiKey: 'YOUR_API_KEY',
+       authDomain: 'YOUR_AUTH_DOMAIN',
+       databaseURL: 'YOUR_DATABASE_URL',
+       projectId: 'YOUR_PROJECT_ID',
+       storageBucket: 'YOUR_STORAGE_BUCKET',
+       messagingSenderId: 'YOUR_MESSAGING_SENDER_ID',
+       appId: 'YOUR_APP_ID'
+     }
+   };
+   ```
+
+### Running the Application
+
+Run the development server:
 
 ```bash
 ng serve
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+Navigate to `http://localhost:4200/` in your browser.
 
-## Code scaffolding
+### Building for Production
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
-```bash
-ng generate component component-name
-```
-
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+Build the project for production:
 
 ```bash
-ng generate --help
+ng build --configuration production
 ```
 
-## Building
+The build artifacts will be stored in the `dist/` directory.
 
-To build the project run:
+## Project Structure
 
-```bash
-ng build
-```
+- **components/** - Angular components
+  - **home/** - Home page with session creation/joining
+  - **session/** - Planning Poker session page
+  - **card/** - Card component for displaying Planning Poker cards
+  - **deck-selection/** - Component for selecting and creating decks
+  - **three-component/** - Three.js 3D card visualization
+- **models/** - TypeScript interfaces and models
+- **services/** - Angular services
+  - **firebase.service.ts** - Service for Firebase Real-time Database operations
+  - **session.service.ts** - Service for managing Planning Poker sessions
+  - **three.service.ts** - Service for Three.js 3D rendering
+- **environments/** - Environment configuration files
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+## Three.js Integration
 
-## Running unit tests
+The application includes a Three.js integration for 3D card visualization. The main components for this are:
 
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
+- **ThreeService** (`src/app/services/three.service.ts`) - A service that handles the 3D rendering
+- **ThreeComponentComponent** (`src/app/components/three-component/three-component.component.ts`) - A component that displays the 3D card
 
-```bash
-ng test
-```
+The 3D card can be toggled on and off during a Planning Poker session, and it demonstrates how Three.js can be integrated into an Angular application.
 
-## Running end-to-end tests
+## Extending the Application
 
-For end-to-end (e2e) testing, run:
+Here are some ideas for extending the application:
 
-```bash
-ng e2e
-```
+- Add authentication for user accounts
+- Add more deck types or customization options
+- Implement a story/ticket management system
+- Add a chat feature for discussion during voting
+- Create more advanced 3D visualizations
+- Add analytics for voting patterns
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+## License
 
-## Additional Resources
+This project is licensed under the MIT License - see the LICENSE file for details.
 
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+## Acknowledgments
+
+- [Angular](https://angular.io/)
+- [Firebase](https://firebase.google.com/)
+- [Three.js](https://threejs.org/)

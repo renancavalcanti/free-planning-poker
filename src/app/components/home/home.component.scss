@@ -1,0 +1,131 @@
+.home-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  padding: 20px;
+}
+
+.home-content {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  padding: 30px;
+  width: 100%;
+  max-width: 600px;
+  
+  .header {
+    text-align: center;
+    margin-bottom: 30px;
+    
+    h1 {
+      color: #1976d2;
+      margin-bottom: 10px;
+    }
+    
+    p {
+      color: #666;
+      margin: 0;
+    }
+  }
+  
+  .login-section {
+    margin-bottom: 30px;
+    
+    h2 {
+      font-size: 1.2rem;
+      margin-bottom: 15px;
+      color: #333;
+    }
+  }
+  
+  .tabs {
+    display: flex;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #ddd;
+    
+    .tab {
+      padding: 10px 20px;
+      cursor: pointer;
+      color: #666;
+      transition: all 0.3s ease;
+      
+      &.active {
+        color: #1976d2;
+        border-bottom: 2px solid #1976d2;
+      }
+      
+      &:hover {
+        background-color: #f9f9f9;
+      }
+    }
+  }
+  
+  .tab-content {
+    padding: 20px 0;
+    
+    h2 {
+      font-size: 1.2rem;
+      margin-bottom: 20px;
+      color: #333;
+    }
+  }
+  
+  .form-group {
+    margin-bottom: 20px;
+    
+    label {
+      display: block;
+      margin-bottom: 5px;
+      color: #555;
+    }
+    
+    input, select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 1rem;
+      transition: border 0.3s ease;
+      
+      &:focus {
+        outline: none;
+        border-color: #1976d2;
+      }
+    }
+    
+    .error-message {
+      color: #f44336;
+      font-size: 0.8rem;
+      margin-top: 5px;
+    }
+  }
+  
+  button {
+    width: 100%;
+    padding: 12px;
+    background-color: #1976d2;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    
+    &:hover {
+      background-color: #1565c0;
+    }
+    
+    &:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .home-content {
+    padding: 20px;
+  }
+} 

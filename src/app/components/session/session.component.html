@@ -1,0 +1,119 @@
+<div class="session-container" *ngIf="session; else loading">
+  <div class="session-header">
+    <div class="session-info">
+      <h1>{{ session.name }}</h1>
+      <div class="session-id">
+        <span>Session ID: {{ sessionId }}</span>
+        <button class="copy-btn" (click)="copySessionIdToClipboard()">Copy</button>
+      </div>
+    </div>
+    
+    <div class="session-actions">
+      <button class="action-btn deck-btn" (click)="toggleDeckSelection()">
+        Change Deck
+      </button>
+      <button class="action-btn leave-btn" (click)="leaveSession()">
+        Leave Session
+      </button>
+      <button class="action-btn three-btn" (click)="toggleThreeDemo()">
+        {{ showThreeDemo ? 'Hide 3D Demo' : 'Show 3D Demo' }}
+      </button>
+    </div>
+  </div>
+  
+  <div class="users-panel">
+    <h2>Participants ({{ getUserCount() }})</h2>
+    <div class="users-list">
+      <div class="user-item" *ngFor="let user of session.users || []">
+        <span class="user-name">{{ user.name }}</span>
+        <span class="user-status" *ngIf="user.isHost">(Host)</span>
+        <span class="user-vote-status" 
+              [class.voted]="hasUserVoted(user.id)">
+          {{ hasUserVoted(user.id) ? '✓' : '' }}
+        </span>
+      </div>
+    </div>
+  </div>
+  
+  <div class="session-content">
+    <div class="deck-selection-overlay" *ngIf="showDeckSelection">
+      <app-deck-selection 
+        [sessionId]="sessionId"
+        (deckSelected)="onDeckSelected($event)">
+      </app-deck-selection>
+    </div>
+    
+    <div class="content-layout">
+      <!-- 3D component section -->
+      <div class="three-section" *ngIf="showThreeDemo">
+        <app-three-component 
+          [cardValue]="selectedCard?.value || ''" 
+          [session]="session"
+          [currentUserId]="currentUser?.id || ''"
+          [revealCards]="session.revealed || false">
+        </app-three-component>
+      </div>
+      
+      <!-- Card selection section -->
+      <div class="cards-section" *ngIf="!showDeckSelection">
+        <h2>Select Your Card</h2>
+        
+        <div class="cards-container">
+          <app-card 
+            *ngFor="let card of session.selectedDeck?.cards || []" 
+            [card]="card"
+            [revealed]="session.revealed"
+            [selected]="selectedCard?.value === card.value"
+            (cardSelected)="selectCard($event)">
+          </app-card>
+        </div>
+        
+        <p *ngIf="session.revealed" class="change-vote-hint">
+          You can still change your vote by selecting a different card
+        </p>
+        
+        <div class="voting-actions">
+          <button 
+            *ngIf="isHost() && !session.revealed && getVoteCount() > 0" 
+            class="action-btn reveal-btn" 
+            (click)="revealCards()">
+            Reveal Cards
+          </button>
+          
+          <button 
+            *ngIf="isHost() && session.revealed" 
+            class="action-btn reset-btn" 
+            (click)="resetVoting()">
+            New Round
+          </button>
+        </div>
+        
+        <!-- Results panel inside card section when revealed -->
+        <div class="results-container" *ngIf="session.revealed">
+          <h2>Voting Results</h2>
+          
+          <div class="results-summary">
+            <div class="result-item" *ngFor="let result of getResultSummary()">
+              <div class="result-value">{{ result.value }}</div>
+              <div class="result-count">{{ result.count }} vote{{ result.count > 1 ? 's' : '' }}</div>
+            </div>
+          </div>
+          
+          <div class="detailed-votes">
+            <div class="vote-item" *ngFor="let vote of session.votes || []">
+              <span class="vote-user">{{ vote.userName }}:</span>
+              <span class="vote-value">{{ vote.value }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<ng-template #loading>
+  <div class="loading-container">
+    <div class="loading-spinner"></div>
+    <p>Loading session...</p>
+  </div>
+</ng-template> 
