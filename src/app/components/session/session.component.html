@@ -54,6 +54,14 @@
         </app-three-component>
       </div>
       
+      <!-- 2D Result Cards Display (alternative to 3D view) -->
+      <div class="result-cards-section" *ngIf="!showThreeDemo && session.votes && session.votes.length > 0">
+        <app-result-cards-display
+          [votes]="session.votes"
+          [revealed]="session.revealed">
+        </app-result-cards-display>
+      </div>
+      
       <!-- Card selection section -->
       <div class="cards-section" *ngIf="!showDeckSelection">
         <h2>Select Your Card</h2>

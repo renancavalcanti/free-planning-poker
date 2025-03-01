@@ -1,0 +1,27 @@
+<div class="result-cards-display">
+  <h2>Voting Results</h2>
+  
+  <div class="table-surface">
+    <div class="cards-container">
+      <div *ngFor="let vote of votes; let i = index" class="card-wrapper" [style.animation-delay]="getRevealDelay(i) + 'ms'">
+        <app-result-card
+          [value]="vote.value"
+          [userName]="vote.userName"
+          [revealed]="revealed">
+        </app-result-card>
+      </div>
+    </div>
+    
+    <div *ngIf="revealed" class="cards-revealed-indicator">
+      <div class="indicator-text">Cards Revealed!</div>
+    </div>
+  </div>
+  
+  <div *ngIf="!revealed" class="instructions">
+    <p>Click the "Reveal Cards" button to see everyone's votes</p>
+  </div>
+  
+  <div class="no-votes-message" *ngIf="votes.length === 0">
+    <p>No votes have been cast yet</p>
+  </div>
+</div>

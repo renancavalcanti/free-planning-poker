@@ -9,11 +9,20 @@ import { Deck } from '../../models/deck.model';
 import { CardComponent } from '../card/card.component';
 import { DeckSelectionComponent } from '../deck-selection/deck-selection.component';
 import { ThreeComponentComponent } from '../three-component/three-component.component';
+import { ResultCardComponent } from '../result-card/result-card.component';
+import { ResultCardsDisplayComponent } from '../result-cards-display/result-cards-display.component';
 
 @Component({
   selector: 'app-session',
   standalone: true,
-  imports: [CommonModule, CardComponent, DeckSelectionComponent, ThreeComponentComponent],
+  imports: [
+    CommonModule, 
+    CardComponent, 
+    DeckSelectionComponent, 
+    ThreeComponentComponent, 
+    ResultCardComponent,
+    ResultCardsDisplayComponent
+  ],
   templateUrl: './session.component.html',
   styleUrls: ['./session.component.scss']
 })

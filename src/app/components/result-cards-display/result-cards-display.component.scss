@@ -1,0 +1,133 @@
+.result-cards-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  
+  h2 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    color: #333;
+    font-size: 1.2rem;
+    text-align: center;
+  }
+  
+  .table-surface {
+    width: 100%;
+    min-height: 400px;
+    background-color: #2e7d32; // Poker table green
+    border-radius: 15px;
+    padding: 30px 20px;
+    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.4);
+    position: relative;
+    margin-bottom: 20px;
+    
+    &:before {
+      content: '';
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      right: 10px;
+      bottom: 10px;
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      pointer-events: none;
+    }
+  }
+  
+  .cards-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+    padding: 10px;
+  }
+  
+  .card-wrapper {
+    animation: dealCard 0.5s ease-out forwards;
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  
+  .cards-revealed-indicator {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 8px 16px;
+    border-radius: 20px;
+    animation: pulseReveal 2s infinite;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    
+    .indicator-text {
+      color: #1976d2;
+      font-weight: bold;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+    }
+  }
+  
+  .instructions {
+    margin-top: 20px;
+    background-color: rgba(25, 118, 210, 0.1);
+    padding: 10px 15px;
+    border-radius: 4px;
+    text-align: center;
+    
+    p {
+      margin: 0;
+      color: #1976d2;
+      font-style: italic;
+    }
+  }
+  
+  .no-votes-message {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 200px;
+    
+    p {
+      font-size: 1.2rem;
+      color: #666;
+      font-style: italic;
+    }
+  }
+}
+
+@keyframes dealCard {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulseReveal {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 4px 15px rgba(25, 118, 210, 0.4);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  }
+}
+
+@media (max-width: 768px) {
+  .result-cards-display {
+    .table-surface {
+      min-height: 300px;
+      padding: 15px 10px;
+    }
+  }
+}

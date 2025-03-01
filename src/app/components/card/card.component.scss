@@ -1,10 +1,10 @@
 .card {
   width: 100px;
   height: 140px;
-  perspective: 1000px;
   margin: 10px;
   cursor: pointer;
-  transition: transform 0.3s ease;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border-radius: 8px;
   
   &.selected {
     transform: translateY(-15px);
@@ -16,62 +16,16 @@
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
   }
   
-  .card-inner {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    text-align: center;
-    transition: transform 0.6s;
-    transform-style: preserve-3d;
-    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
-    border-radius: 8px;
-  }
-  
-  &.revealed .card-inner {
-    transform: rotateY(180deg);
-  }
-  
-  .card-front {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    -webkit-backface-visibility: hidden;
-    backface-visibility: hidden;
-    border-radius: 8px;
-    overflow: hidden;
-  }
-  
-  .card-back-content {
-    width: 100%;
-    height: 100%;
-    background-color: #1976d2;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    transform: rotateY(0deg);
-    -webkit-backface-visibility: hidden;
-    backface-visibility: hidden;
-    position: absolute;
-    
-    .logo {
-      font-size: 2rem;
-      font-weight: bold;
-      color: white;
-    }
-  }
-  
-  .card-front-content {
+  .card-content {
     width: 100%;
     height: 100%;
     background-color: white;
+    border: 2px solid #1976d2;
+    border-radius: 8px;
     display: flex;
     justify-content: center;
     align-items: center;
-    transform: rotateY(180deg);
-    border: 2px solid #1976d2;
-    -webkit-backface-visibility: hidden;
-    backface-visibility: hidden;
-    position: absolute;
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.1);
     
     .card-value {
       font-size: 2rem;

@@ -191,6 +191,19 @@
         }
       }
       
+      .result-cards-section {
+        background-color: white;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        width: 100%;
+        
+        @media (min-width: 992px) {
+          flex: 1;
+          max-width: 50%;
+        }
+      }
+      
       .cards-section {
         background-color: white;
         border-radius: 8px;
@@ -275,6 +288,14 @@
             margin-bottom: 20px;
             color: #333;
             font-size: 1.2rem;
+          }
+          
+          .result-cards-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+            justify-content: center;
           }
           
           .results-summary {
