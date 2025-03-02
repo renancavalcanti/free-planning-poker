@@ -21,6 +21,7 @@ export class ThreeComponentComponent implements OnInit, AfterViewInit, OnDestroy
   private initialized = false;
   private previousVoteCount = 0;
   private previousVisibility = true;
+  private resizeTimeoutId: any = null;
   
   constructor(private threeService: ThreeService) { }
 
@@ -30,6 +31,9 @@ export class ThreeComponentComponent implements OnInit, AfterViewInit, OnDestroy
   ngAfterViewInit(): void {
     if (this.threeContainer) {
       this.initThreeJs();
+      
+      // Add a window resize listener to ensure the 3D scene always resizes
+      window.addEventListener('resize', this.handleResize.bind(this));
     }
   }
   
@@ -55,12 +59,12 @@ export class ThreeComponentComponent implements OnInit, AfterViewInit, OnDestroy
         }
       }
       
-      // If visibility changed, handle resize or refresh
+      // If visibility changed from false to true (2D to 3D) - fix sizing
       if (changes['visible'] && this.previousVisibility !== this.visible) {
         this.previousVisibility = this.visible;
-        if (this.visible) {
-          // When switching from 2D back to 3D mode, refresh the page
-          window.location.reload();
+        if (this.visible && this.threeContainer) {
+          // Apply multiple resize attempts to ensure proper sizing
+          this.performMultipleResizes();
         }
       }
       
@@ -84,7 +88,59 @@ export class ThreeComponentComponent implements OnInit, AfterViewInit, OnDestroy
     }
   }
   
+  // Handle window resize
+  private handleResize(): void {
+    if (this.visible && this.threeContainer) {
+      this.performDelayedResize();
+    }
+  }
+  
+  // Schedule a delayed resize to ensure proper sizing
+  private performDelayedResize(): void {
+    // Clear any existing timeout to prevent multiple calls
+    if (this.resizeTimeoutId) {
+      clearTimeout(this.resizeTimeoutId);
+    }
+    
+    // Set a new timeout to resize
+    this.resizeTimeoutId = setTimeout(() => {
+      if (this.threeContainer && this.threeContainer.nativeElement) {
+        // Make sure container has explicit dimensions
+        const containerStyle = this.threeContainer.nativeElement.style;
+        containerStyle.height = '500px';
+        containerStyle.width = '100%';
+        containerStyle.display = 'block';
+        
+        // Force layout recalculation
+        void this.threeContainer.nativeElement.offsetHeight;
+        
+        // Resize the renderer
+        this.threeService.resizeRenderer(this.threeContainer.nativeElement);
+      }
+      this.resizeTimeoutId = null;
+    }, 100);
+  }
+  
+  // When toggling to 3D mode, apply multiple resize attempts
+  private performMultipleResizes(): void {
+    // Immediate resize attempt
+    this.performDelayedResize();
+    
+    // Additional resize attempts at increasing intervals
+    setTimeout(() => this.performDelayedResize(), 300);
+    setTimeout(() => this.performDelayedResize(), 600);
+    setTimeout(() => this.performDelayedResize(), 1000);
+  }
+  
   ngOnDestroy(): void {
+    // Remove event listener
+    window.removeEventListener('resize', this.handleResize.bind(this));
+    
+    // Clear any pending resize timeout
+    if (this.resizeTimeoutId) {
+      clearTimeout(this.resizeTimeoutId);
+    }
+    
     this.threeService.dispose();
   }
   

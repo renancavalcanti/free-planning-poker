@@ -33,6 +33,7 @@ export class SessionComponent implements OnInit, OnDestroy {
   selectedCard: Card | null = null;
   showDeckSelection = false;
   showThreeDemo = true;
+  isReloading = false;
 
   private sessionSubscription?: Subscription;
   private userSubscription?: Subscription;
@@ -181,6 +182,10 @@ export class SessionComponent implements OnInit, OnDestroy {
 
   toggleThreeDemo(): void {
     this.showThreeDemo = !this.showThreeDemo;
+    if(this.showThreeDemo){
+      this.isReloading = true;
+      window.location.reload();
+    }
   }
 
   getVoteCount(): number {
