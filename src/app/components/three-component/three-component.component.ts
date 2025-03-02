@@ -16,9 +16,11 @@ export class ThreeComponentComponent implements OnInit, AfterViewInit, OnDestroy
   @Input() session: Session | null = null;
   @Input() currentUserId: string = '';
   @Input() revealCards: boolean = false;
+  @Input() visible: boolean = true; // Track visibility
   
   private initialized = false;
   private previousVoteCount = 0;
+  private previousVisibility = true;
   
   constructor(private threeService: ThreeService) { }
 
@@ -53,10 +55,31 @@ export class ThreeComponentComponent implements OnInit, AfterViewInit, OnDestroy
         }
       }
       
-      // If just the cardValue changed (current user selected a card)
+      // If visibility changed, handle resize or refresh
+      if (changes['visible'] && this.previousVisibility !== this.visible) {
+        this.previousVisibility = this.visible;
+        if (this.visible) {
+          // When switching from 2D back to 3D mode, refresh the page
+          window.location.reload();
+        }
+      }
+      
+      // Card value changes are now handled by updating the user's card directly
       if (changes['cardValue'] && this.cardValue && this.currentUserId) {
-        // Optional: create a floating card for preview
-        this.threeService.createCard(this.cardValue);
+        // Find if the user already has a vote in the session
+        const existingVote = this.session?.votes?.find(vote => vote.userId === this.currentUserId);
+        
+        if (existingVote) {
+          // If user already has a card, it will be updated on the next session update
+        } else {
+          // Preview the card by temporarily showing it as the current user's card
+          this.threeService.addUserCard(
+            this.currentUserId,
+            this.session?.users?.find(u => u.id === this.currentUserId)?.name || 'You',
+            this.cardValue,
+            false // Not revealed
+          );
+        }
       }
     }
   }
@@ -72,10 +95,6 @@ export class ThreeComponentComponent implements OnInit, AfterViewInit, OnDestroy
     if (this.session) {
       this.updateUsers();
       this.updateCards();
-    }
-    
-    if (this.cardValue) {
-      this.threeService.createCard(this.cardValue);
     }
   }
   
@@ -122,18 +141,6 @@ export class ThreeComponentComponent implements OnInit, AfterViewInit, OnDestroy
     }
     
     this.previousVoteCount = this.session.votes.length;
-  }
-  
-  updateCardValue(value: string): void {
-    if (this.initialized) {
-      this.threeService.createCard(value);
-    }
-  }
-  
-  flipCard(): void {
-    if (this.initialized) {
-      this.threeService.flipCard();
-    }
   }
   
   private clearAllCards(): void {

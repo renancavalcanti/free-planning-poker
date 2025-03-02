@@ -27,6 +27,7 @@ export class ThreeService {
   private cardWidth: number = 1.5;
   private cardHeight: number = 2;
   private cardDepth: number = 0.05;
+  private roomSize: number = 18; // Increased meeting room size (was 14)
   
   constructor() { }
 
@@ -59,20 +60,44 @@ export class ThreeService {
     this.controls.maxDistance = 15;
     this.controls.maxPolarAngle = Math.PI / 2 - 0.1; // Prevent going below the table
     
+    // Set bounds to keep camera inside the room
+    const maxX = this.roomSize / 2 - 1;
+    const maxZ = this.roomSize / 2 - 1;
+    this.controls.addEventListener('change', () => {
+      // Clamp camera position to room boundaries
+      if (this.camera) {
+        this.camera.position.x = Math.max(-maxX, Math.min(maxX, this.camera.position.x));
+        this.camera.position.z = Math.max(-maxZ, Math.min(maxZ, this.camera.position.z));
+      }
+    });
+    
     // Add ambient light
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
     this.scene.add(ambientLight);
     
     // Add directional light
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+    const directionalLight = new THREE.DirectionalLight(0xfff8e1, 0.9);
     directionalLight.position.set(5, 10, 5);
     directionalLight.castShadow = true;
     this.scene.add(directionalLight);
     
-    // Add point light
-    const pointLight = new THREE.PointLight(0xffffff, 0.5);
-    pointLight.position.set(0, 6, 0);
+    // Add point light (overhead light)
+    const pointLight = new THREE.PointLight(0xffffff, 0.8);
+    pointLight.position.set(0, 8, 0);
+    pointLight.castShadow = true;
     this.scene.add(pointLight);
+    
+    // Add corner lights for better room illumination
+    const cornerLight1 = new THREE.PointLight(0xfff0e0, 0.4);
+    cornerLight1.position.set(this.roomSize/3, 7, this.roomSize/3);
+    this.scene.add(cornerLight1);
+    
+    const cornerLight2 = new THREE.PointLight(0xe0f0ff, 0.4);
+    cornerLight2.position.set(-this.roomSize/3, 7, -this.roomSize/3);
+    this.scene.add(cornerLight2);
+    
+    // Create meeting room
+    this.createMeetingRoom();
     
     // Create table
     this.createTable();
@@ -85,6 +110,301 @@ export class ThreeService {
     
     // Start animation loop
     this.animate();
+  }
+
+  private createMeetingRoom(): void {
+    if (!this.scene) return;
+    
+    const roomSize = this.roomSize;
+    const wallHeight = 10;
+    
+    // Wall material with texture - changed to pure white
+    const wallMaterial = new THREE.MeshStandardMaterial({
+      color: 0xffffff, // Pure white (was 0xe8eaed light gray)
+      roughness: 0.9,
+      metalness: 0.1,
+    });
+    
+    // Create walls
+    // Back wall
+    const backWallGeometry = new THREE.BoxGeometry(roomSize, wallHeight, 0.2);
+    const backWall = new THREE.Mesh(backWallGeometry, wallMaterial);
+    backWall.position.set(0, wallHeight / 2, -roomSize / 2);
+    backWall.receiveShadow = true;
+    this.scene.add(backWall);
+    
+    // Left wall
+    const leftWallGeometry = new THREE.BoxGeometry(0.2, wallHeight, roomSize);
+    const leftWall = new THREE.Mesh(leftWallGeometry, wallMaterial);
+    leftWall.position.set(-roomSize / 2, wallHeight / 2, 0);
+    leftWall.receiveShadow = true;
+    this.scene.add(leftWall);
+    
+    // Right wall
+    const rightWallGeometry = new THREE.BoxGeometry(0.2, wallHeight, roomSize);
+    const rightWall = new THREE.Mesh(rightWallGeometry, wallMaterial);
+    rightWall.position.set(roomSize / 2, wallHeight / 2, 0);
+    rightWall.receiveShadow = true;
+    this.scene.add(rightWall);
+    
+    // Front wall with door cutout
+    const doorWidth = 3;
+    const doorHeight = 7;
+    
+    // Front wall left section
+    const frontWallLeftGeometry = new THREE.BoxGeometry((roomSize - doorWidth) / 2, wallHeight, 0.2);
+    const frontWallLeft = new THREE.Mesh(frontWallLeftGeometry, wallMaterial);
+    frontWallLeft.position.set(-roomSize / 4 - doorWidth / 4, wallHeight / 2, roomSize / 2);
+    frontWallLeft.receiveShadow = true;
+    this.scene.add(frontWallLeft);
+    
+    // Front wall right section
+    const frontWallRightGeometry = new THREE.BoxGeometry((roomSize - doorWidth) / 2, wallHeight, 0.2);
+    const frontWallRight = new THREE.Mesh(frontWallRightGeometry, wallMaterial);
+    frontWallRight.position.set(roomSize / 4 + doorWidth / 4, wallHeight / 2, roomSize / 2);
+    frontWallRight.receiveShadow = true;
+    this.scene.add(frontWallRight);
+    
+    // Front wall top section (above door)
+    const frontWallTopGeometry = new THREE.BoxGeometry(roomSize, wallHeight - doorHeight, 0.2);
+    const frontWallTop = new THREE.Mesh(frontWallTopGeometry, wallMaterial);
+    frontWallTop.position.set(0, doorHeight + (wallHeight - doorHeight) / 2, roomSize / 2);
+    frontWallTop.receiveShadow = true;
+    this.scene.add(frontWallTop);
+    
+    // Create ceiling
+    const ceilingGeometry = new THREE.BoxGeometry(roomSize, 0.2, roomSize);
+    const ceilingMaterial = new THREE.MeshStandardMaterial({
+      color: 0xffffff,
+      roughness: 0.8,
+      metalness: 0.1,
+    });
+    const ceiling = new THREE.Mesh(ceilingGeometry, ceilingMaterial);
+    ceiling.position.set(0, wallHeight, 0);
+    ceiling.receiveShadow = true;
+    this.scene.add(ceiling);
+    
+    // Add TV/Monitor on the back wall
+    this.addTelevision();
+    
+    // Add whiteboard
+    this.addWhiteboard();
+    
+    // Add window on left wall
+    this.addWindow();
+    
+    // Add some decorative elements
+    this.addRoomDecorations();
+  }
+  
+  private addTelevision(): void {
+    if (!this.scene) return;
+    
+    // TV frame
+    const tvFrameGeometry = new THREE.BoxGeometry(5, 3, 0.2);
+    const tvFrameMaterial = new THREE.MeshStandardMaterial({
+      color: 0x333333, // Dark gray
+      roughness: 0.5,
+      metalness: 0.8,
+    });
+    const tvFrame = new THREE.Mesh(tvFrameGeometry, tvFrameMaterial);
+    tvFrame.position.set(0, 6, -this.roomSize / 2 + 0.15);
+    tvFrame.castShadow = true;
+    this.scene.add(tvFrame);
+    
+    // TV screen
+    const tvScreenGeometry = new THREE.BoxGeometry(4.8, 2.8, 0.05);
+    
+    // Create a canvas for TV content
+    const canvas = document.createElement('canvas');
+    canvas.width = 512;
+    canvas.height = 256;
+    const context = canvas.getContext('2d');
+    
+    if (context) {
+      // Background
+      context.fillStyle = '#0a2540';
+      context.fillRect(0, 0, canvas.width, canvas.height);
+      
+      // Draw a title
+      context.fillStyle = 'white';
+      context.font = 'Bold 40px Arial';
+      context.textAlign = 'center';
+      context.fillText('PLANNING POKER', canvas.width / 2, 80);
+      
+      // Draw a subtitle
+      context.font = '30px Arial';
+      context.fillText('Team Meeting in Progress', canvas.width / 2, 150);
+      
+      // Create a screen texture
+      const screenTexture = new THREE.CanvasTexture(canvas);
+      const tvScreenMaterial = new THREE.MeshBasicMaterial({ map: screenTexture });
+      const tvScreen = new THREE.Mesh(tvScreenGeometry, tvScreenMaterial);
+      tvScreen.position.set(0, 6, -this.roomSize / 2 + 0.3);
+      this.scene.add(tvScreen);
+    }
+  }
+  
+  private addWhiteboard(): void {
+    if (!this.scene) return;
+    
+    // Whiteboard frame
+    const frameGeometry = new THREE.BoxGeometry(4, 3, 0.1);
+    const frameMaterial = new THREE.MeshStandardMaterial({
+      color: 0x999999,
+      roughness: 0.5,
+      metalness: 0.3,
+    });
+    const frame = new THREE.Mesh(frameGeometry, frameMaterial);
+    frame.position.set(-this.roomSize / 2 + 0.15, 5, -this.roomSize / 4);
+    frame.rotateY(Math.PI / 2);
+    frame.castShadow = true;
+    this.scene.add(frame);
+    
+    // Whiteboard surface
+    const boardGeometry = new THREE.BoxGeometry(3.8, 2.8, 0.05);
+    const boardMaterial = new THREE.MeshStandardMaterial({
+      color: 0xffffff,
+      roughness: 0.2,
+      metalness: 0.1,
+    });
+    const board = new THREE.Mesh(boardGeometry, boardMaterial);
+    board.position.set(-this.roomSize / 2 + 0.3, 5, -this.roomSize / 4);
+    board.rotateY(Math.PI / 2);
+    this.scene.add(board);
+  }
+  
+  private addWindow(): void {
+    if (!this.scene) return;
+    
+    // Window frame
+    const frameGeometry = new THREE.BoxGeometry(0.3, 4, 6); // Wider window
+    const frameMaterial = new THREE.MeshStandardMaterial({
+      color: 0x5d4037, // Brown
+      roughness: 0.7,
+      metalness: 0.1,
+    });
+    const frame = new THREE.Mesh(frameGeometry, frameMaterial);
+    frame.position.set(this.roomSize / 2 - 0.1, 5, -this.roomSize / 4);
+    frame.castShadow = true;
+    this.scene.add(frame);
+    
+    // Window glass
+    const glassGeometry = new THREE.BoxGeometry(0.05, 3.7, 5.7); // Wider glass
+    const glassMaterial = new THREE.MeshPhysicalMaterial({
+      color: 0xadd8e6, // Light blue
+      roughness: 0.1,
+      metalness: 0.2,
+      transparent: true,
+      opacity: 0.4,
+      clearcoat: 1.0,
+    });
+    const glass = new THREE.Mesh(glassGeometry, glassMaterial);
+    glass.position.set(this.roomSize / 2 - 0.2, 5, -this.roomSize / 4);
+    this.scene.add(glass);
+    
+    // Window light effect
+    const windowLight = new THREE.PointLight(0xffffff, 0.6);
+    windowLight.position.set(this.roomSize / 2 - 1, 5, -this.roomSize / 4);
+    this.scene.add(windowLight);
+  }
+  
+  private addRoomDecorations(): void {
+    if (!this.scene) return;
+    
+    // Add a plant in the corner
+    this.addPlant(this.roomSize / 2 - 1, this.roomSize / 2 - 1, 0.4);
+    
+    // Add a second plant in the opposite corner
+    this.addPlant(-this.roomSize / 2 + 1, -this.roomSize / 2 + 1, 0.3);
+    
+    // Add a clock to the wall
+    const clockRimGeometry = new THREE.RingGeometry(0.8, 1, 32);
+    const clockRimMaterial = new THREE.MeshStandardMaterial({
+      color: 0xdddddd, // Light gray
+      roughness: 0.5,
+      metalness: 0.5,
+    });
+    const clockRim = new THREE.Mesh(clockRimGeometry, clockRimMaterial);
+    clockRim.position.set(-this.roomSize / 2 + 0.15, 7, this.roomSize / 4);
+    clockRim.rotateY(Math.PI / 2);
+    this.scene.add(clockRim);
+    
+    // Clock face
+    const clockFaceGeometry = new THREE.CircleGeometry(0.8, 32);
+    const clockFaceMaterial = new THREE.MeshStandardMaterial({
+      color: 0xffffff,
+      roughness: 0.5,
+      metalness: 0.1,
+    });
+    const clockFace = new THREE.Mesh(clockFaceGeometry, clockFaceMaterial);
+    clockFace.position.set(-this.roomSize / 2 + 0.14, 7, this.roomSize / 4);
+    clockFace.rotateY(Math.PI / 2);
+    this.scene.add(clockFace);
+    
+    // Clock hands
+    const hourHandGeometry = new THREE.BoxGeometry(0.05, 0.4, 0.05);
+    const hourHandMaterial = new THREE.MeshStandardMaterial({
+      color: 0x000000,
+      roughness: 0.5,
+      metalness: 0.2,
+    });
+    const hourHand = new THREE.Mesh(hourHandGeometry, hourHandMaterial);
+    hourHand.position.set(-this.roomSize / 2 + 0.13, 7, this.roomSize / 4);
+    hourHand.rotateY(Math.PI / 2);
+    hourHand.rotateZ(Math.PI / 3); // Set time to approx 2 o'clock
+    this.scene.add(hourHand);
+    
+    // Minute hand
+    const minuteHandGeometry = new THREE.BoxGeometry(0.03, 0.6, 0.03);
+    const minuteHand = new THREE.Mesh(minuteHandGeometry, hourHandMaterial);
+    minuteHand.position.set(-this.roomSize / 2 + 0.13, 7, this.roomSize / 4);
+    minuteHand.rotateY(Math.PI / 2);
+    minuteHand.rotateZ(Math.PI / 6); // Set time to approx 2:10
+    this.scene.add(minuteHand);
+  }
+
+  // Helper method to create plants
+  private addPlant(x: number, z: number, scale: number = 1): void {
+    if (!this.scene) return;
+    
+    // Pot
+    const potGeometry = new THREE.CylinderGeometry(0.4 * scale, 0.3 * scale, 0.7 * scale, 16);
+    const potMaterial = new THREE.MeshStandardMaterial({
+      color: 0x795548, // Brown
+      roughness: 0.8,
+      metalness: 0.1,
+    });
+    const pot = new THREE.Mesh(potGeometry, potMaterial);
+    pot.position.set(x, 0.35 * scale, z);
+    pot.castShadow = true;
+    this.scene.add(pot);
+    
+    // Create plant leaves using cones
+    const leafMaterial = new THREE.MeshStandardMaterial({
+      color: 0x2e7d32, // Green
+      roughness: 1.0,
+      metalness: 0.0,
+    });
+    
+    const leafCount = Math.floor(5 + Math.random() * 3);
+    for (let i = 0; i < leafCount; i++) {
+      const leafGeometry = new THREE.ConeGeometry(0.3 * scale, 1.5 * scale, 8);
+      const leaf = new THREE.Mesh(leafGeometry, leafMaterial);
+      
+      // Position and rotate leaves in different directions
+      const angle = (i / leafCount) * Math.PI * 2;
+      leaf.position.set(
+        x + Math.sin(angle) * 0.2 * scale,
+        1.3 * scale,
+        z + Math.cos(angle) * 0.2 * scale
+      );
+      
+      leaf.rotation.x = Math.PI / 6 + (Math.random() * 0.2 - 0.1);
+      leaf.rotation.z = angle;
+      leaf.castShadow = true;
+      this.scene.add(leaf);
+    }
   }
 
   private createTable(): void {
@@ -137,23 +457,142 @@ export class ThreeService {
     felt.position.y = 2.1; // Just above the table
     felt.receiveShadow = true;
     this.scene.add(felt);
+    
+    // Add a decorative plant vase in the center of the table
+    this.addTableCenterpiece();
+  }
+
+  // Add a decorative centerpiece to the table
+  private addTableCenterpiece(): void {
+    if (!this.scene) return;
+    
+    // Create vase
+    const vaseGeometry = new THREE.CylinderGeometry(0.3, 0.2, 0.5, 16);
+    const vaseMaterial = new THREE.MeshStandardMaterial({
+      color: 0x607d8b, // Blue-gray
+      roughness: 0.2,
+      metalness: 0.8
+    });
+    
+    const vase = new THREE.Mesh(vaseGeometry, vaseMaterial);
+    vase.position.set(0, 2.35, 0); // Position at center of table
+    vase.castShadow = true;
+    this.scene.add(vase);
+    
+    // Add small flowers/plants in the vase
+    const flowerColors = [0xf06292, 0x4db6ac, 0xffb74d, 0xba68c8]; // Pink, teal, orange, purple
+    
+    // Create several small flowers
+    for (let i = 0; i < 7; i++) {
+      const flowerColor = flowerColors[i % flowerColors.length];
+      
+      // Create flower stem
+      const stemGeometry = new THREE.CylinderGeometry(0.02, 0.02, 0.7, 8);
+      const stemMaterial = new THREE.MeshStandardMaterial({
+        color: 0x66bb6a, // Green
+        roughness: 0.9,
+        metalness: 0.0
+      });
+      
+      const stem = new THREE.Mesh(stemGeometry, stemMaterial);
+      
+      // Position stem at angle from center
+      const angle = (i / 7) * Math.PI * 2;
+      const radius = 0.15;
+      const stemX = Math.sin(angle) * radius;
+      const stemZ = Math.cos(angle) * radius;
+      
+      stem.position.set(stemX, 2.7, stemZ);
+      stem.rotation.x = Math.random() * 0.2 - 0.1;
+      stem.rotation.z = Math.random() * 0.2 - 0.1;
+      
+      // Create flower head
+      const flowerGeometry = new THREE.SphereGeometry(0.08, 8, 8);
+      const flowerMaterial = new THREE.MeshStandardMaterial({
+        color: flowerColor,
+        roughness: 0.8,
+        metalness: 0.1
+      });
+      
+      const flower = new THREE.Mesh(flowerGeometry, flowerMaterial);
+      flower.position.set(stemX, 3.05 + (Math.random() * 0.1), stemZ);
+      flower.scale.y = 0.7; // Slightly flatten
+      
+      this.scene.add(stem);
+      this.scene.add(flower);
+    }
   }
 
   private addFloor(): void {
     if (!this.scene) return;
     
-    const floorGeometry = new THREE.PlaneGeometry(20, 20);
-    const floorMaterial = new THREE.MeshStandardMaterial({ 
-      color: 0xe0e0e0, // Light gray
-      roughness: 1.0,
-      metalness: 0.0
-    });
+    // Use a larger floor that matches the room size
+    const floorGeometry = new THREE.PlaneGeometry(this.roomSize, this.roomSize);
     
-    const floor = new THREE.Mesh(floorGeometry, floorMaterial);
-    floor.rotation.x = -Math.PI / 2; // Make it horizontal
-    floor.position.y = 0; // At floor level
-    floor.receiveShadow = true;
-    this.scene.add(floor);
+    // Create a canvas for the floor texture
+    const canvas = document.createElement('canvas');
+    canvas.width = 512;
+    canvas.height = 512;
+    const context = canvas.getContext('2d');
+    
+    if (context) {
+      // Fill with base color
+      context.fillStyle = '#f5f5f5';
+      context.fillRect(0, 0, canvas.width, canvas.height);
+      
+      // Create a grid pattern
+      context.strokeStyle = '#e0e0e0';
+      context.lineWidth = 2;
+      const tileSize = canvas.width / 8; // 8x8 grid
+      
+      // Draw grid lines
+      for (let i = 0; i <= 8; i++) {
+        const pos = i * tileSize;
+        
+        // Horizontal lines
+        context.beginPath();
+        context.moveTo(0, pos);
+        context.lineTo(canvas.width, pos);
+        context.stroke();
+        
+        // Vertical lines
+        context.beginPath();
+        context.moveTo(pos, 0);
+        context.lineTo(pos, canvas.height);
+        context.stroke();
+      }
+      
+      // Create texture from canvas
+      const texture = new THREE.CanvasTexture(canvas);
+      texture.wrapS = THREE.RepeatWrapping;
+      texture.wrapT = THREE.RepeatWrapping;
+      texture.repeat.set(4, 4); // Repeat pattern
+      
+      const floorMaterial = new THREE.MeshStandardMaterial({ 
+        map: texture,
+        roughness: 0.9,
+        metalness: 0.1
+      });
+      
+      const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+      floor.rotation.x = -Math.PI / 2; // Make it horizontal
+      floor.position.y = 0; // At floor level
+      floor.receiveShadow = true;
+      this.scene.add(floor);
+    } else {
+      // Fallback if canvas is not available
+      const floorMaterial = new THREE.MeshStandardMaterial({ 
+        color: 0xf5f5f5, // Light gray
+        roughness: 1.0,
+        metalness: 0.0
+      });
+      
+      const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+      floor.rotation.x = -Math.PI / 2; // Make it horizontal
+      floor.position.y = 0; // At floor level
+      floor.receiveShadow = true;
+      this.scene.add(floor);
+    }
   }
 
   updateUsers(users: { id: string, name: string }[]): void {
@@ -519,92 +958,41 @@ export class ThreeService {
     return cardMesh;
   }
 
-  // Original card-related methods kept for backward compatibility
+  // Modified createCard method - no longer shows a card in the middle
   createCard(value: string): void {
-    if (!this.scene) return;
-    
-    // Remove existing card if any
-    if (this.cardMesh) {
-      this.scene.remove(this.cardMesh);
-    }
-    
-    // Create the card mesh
-    this.cardMesh = this.createCardMesh(value, true);
-    this.cardMesh.position.set(0, 4, 0); // Floating above the table
-    this.scene.add(this.cardMesh);
+    // This method is kept for backward compatibility but no longer displays a card
+    // The user's card selection is shown in their hand on the table instead
   }
 
   private addTextToCard(value: string): void {
-    if (!this.scene || !this.cardMesh) return;
-    
-    // Create a canvas texture for the text
-    const canvas = document.createElement('canvas');
-    canvas.width = 512;
-    canvas.height = 512;
-    const context = canvas.getContext('2d');
-    
-    if (context) {
-      context.fillStyle = 'white';
-      context.fillRect(0, 0, canvas.width, canvas.height);
-      
-      // Draw text on canvas
-      context.fillStyle = 'black';
-      context.font = 'Bold 160px Arial';
-      context.textAlign = 'center';
-      context.textBaseline = 'middle';
-      context.fillText(value, canvas.width / 2, canvas.height / 2);
-      
-      // Create texture from canvas
-      const texture = new THREE.CanvasTexture(canvas);
-      
-      // Apply texture to front face of the card
-      if (Array.isArray(this.cardMesh.material)) {
-        this.cardMesh.material[4] = new THREE.MeshStandardMaterial({ 
-          map: texture 
-        });
-      }
-    }
+    // No longer needed but kept for backward compatibility
   }
 
   flipCard(): void {
-    if (!this.cardMesh) return;
-    
-    // Animate the card flip
-    const duration = 1000; // in milliseconds
-    const startTime = Date.now();
-    
-    const animate = () => {
-      const elapsed = Date.now() - startTime;
-      const progress = Math.min(elapsed / duration, 1);
-      
-      // Use easing function for smoother animation
-      const easeProgress = this.easeInOutQuad(progress);
-      
-      // Calculate rotation angle
-      const rotationY = Math.PI * easeProgress;
-      
-      if (this.cardMesh) {
-        this.cardMesh.rotation.y = rotationY;
-      }
-      
-      if (progress < 1) {
-        requestAnimationFrame(animate);
-      }
-    };
-    
-    animate();
-  }
-
-  private easeInOutQuad(t: number): number {
-    return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+    // No longer needed but kept for backward compatibility
   }
 
   private onWindowResize(container: HTMLElement): void {
     if (!this.camera || !this.renderer) return;
     
-    this.camera.aspect = container.clientWidth / container.clientHeight;
-    this.camera.updateProjectionMatrix();
-    this.renderer.setSize(container.clientWidth, container.clientHeight);
+    // Make sure we get the actual dimensions
+    const width = container.clientWidth || container.offsetWidth;
+    const height = container.clientHeight || container.offsetHeight;
+    
+    // Only update if dimensions are valid (greater than 0)
+    if (width > 0 && height > 0) {
+      this.camera.aspect = width / height;
+      this.camera.updateProjectionMatrix();
+      this.renderer.setSize(width, height, true);
+    }
+  }
+  
+  // Public method to manually trigger a resize when component is shown/hidden
+  resizeRenderer(container: HTMLElement): void {
+    // Small delay to ensure the container has settled into its new size
+    setTimeout(() => {
+      this.onWindowResize(container);
+    }, 100);
   }
 
   private animate(): void {
@@ -676,5 +1064,9 @@ export class ThreeService {
     if (this.renderer) {
       this.renderer.dispose();
     }
+  }
+
+  private easeInOutQuad(t: number): number {
+    return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
   }
 } 
