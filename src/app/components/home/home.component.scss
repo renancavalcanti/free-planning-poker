@@ -124,6 +124,39 @@
   }
 }
 
+.shared-link-login {
+  padding: 20px;
+  margin-bottom: 30px;
+  background-color: #e3f2fd;
+  border-radius: 8px;
+  border-left: 4px solid #1976d2;
+  
+  h2 {
+    color: #1976d2;
+    margin-bottom: 20px;
+  }
+  
+  .join-btn {
+    background-color: #1976d2;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    margin-top: 15px;
+    font-size: 1rem;
+    width: 100%;
+    
+    &:hover {
+      background-color: #1565c0;
+    }
+    
+    &:disabled {
+      background-color: #bbdefb;
+      cursor: not-allowed;
+    }
+  }
+}
+
 @media (max-width: 768px) {
   .home-content {
     padding: 20px;

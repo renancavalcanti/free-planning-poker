@@ -40,6 +40,16 @@
           &:hover {
             background-color: #eee;
           }
+          
+          &.share-btn {
+            background-color: #e3f2fd;
+            border-color: #bbdefb;
+            color: #1976d2;
+            
+            &:hover {
+              background-color: #bbdefb;
+            }
+          }
         }
       }
     }

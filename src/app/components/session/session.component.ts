@@ -11,6 +11,7 @@ import { DeckSelectionComponent } from '../deck-selection/deck-selection.compone
 import { ThreeComponentComponent } from '../three-component/three-component.component';
 import { ResultCardComponent } from '../result-card/result-card.component';
 import { ResultCardsDisplayComponent } from '../result-cards-display/result-cards-display.component';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-session',
@@ -34,6 +35,7 @@ export class SessionComponent implements OnInit, OnDestroy {
   showDeckSelection = false;
   showThreeDemo = true;
   isReloading = false;
+  shareUrl: string = '';
 
   private sessionSubscription?: Subscription;
   private userSubscription?: Subscription;
@@ -41,7 +43,8 @@ export class SessionComponent implements OnInit, OnDestroy {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private sessionService: SessionService
+    private sessionService: SessionService,
+    private toastr: ToastrService
   ) { }
 
   ngOnInit(): void {
@@ -52,8 +55,35 @@ export class SessionComponent implements OnInit, OnDestroy {
       return;
     }
     
+    // Generate shareable URL
+    this.shareUrl = `${window.location.origin}/session/${this.sessionId}`;
+    
+    // Check if user is authenticated or has stored credentials
+    this.checkUserAuthentication();
+    
     this.loadSession();
     this.loadCurrentUser();
+  }
+
+  // Check if user is authenticated or has stored information
+  checkUserAuthentication(): void {
+    const userId = localStorage.getItem('userId');
+    const userName = localStorage.getItem('userName');
+    
+    if (!userId || !userName) {
+      // If no stored user info, redirect to home page for login
+      // Store the session ID to redirect back after login
+      localStorage.setItem('pendingSessionId', this.sessionId);
+      this.router.navigate(['/']);
+      return;
+    }
+    
+    // If user info exists in local storage but not in the service, set it
+    this.sessionService.getCurrentUser().subscribe(user => {
+      if (!user && userId && userName) {
+        this.sessionService.setCurrentUser(userName);
+      }
+    });
   }
 
   ngOnDestroy(): void {
@@ -175,9 +205,14 @@ export class SessionComponent implements OnInit, OnDestroy {
     this.router.navigate(['/']);
   }
 
+  copySessionLinkToClipboard(): void {
+    navigator.clipboard.writeText(this.shareUrl);
+    this.toastr.success('Session link copied to clipboard!', 'Success');
+  }
+
   copySessionIdToClipboard(): void {
     navigator.clipboard.writeText(this.sessionId);
-    // You could add a toast notification here
+    this.toastr.success('Session ID copied to clipboard!', 'Success');
   }
 
   toggleThreeDemo(): void {

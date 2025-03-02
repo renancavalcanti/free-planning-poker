@@ -4,7 +4,8 @@
       <h1>{{ session.name }}</h1>
       <div class="session-id">
         <span>Session ID: {{ sessionId }}</span>
-        <button class="copy-btn" (click)="copySessionIdToClipboard()">Copy</button>
+        <button class="copy-btn" (click)="copySessionIdToClipboard()">Copy ID</button>
+        <button class="copy-btn share-btn" (click)="copySessionLinkToClipboard()">Share Link</button>
       </div>
     </div>
     
@@ -56,7 +57,7 @@
       </div>
       
       <!-- 2D Result Cards Display (alternative to 3D view) -->
-      <div class="result-cards-section" *ngIf="isReloading || (!showThreeDemo && session.votes && session.votes.length > 0)">
+      <div class="result-cards-section" *ngIf="isReloading || (!showThreeDemo && session.votes && session.votes.length > 0)">
         <app-result-cards-display
           [votes]="session.votes"
           [revealed]="session.revealed">

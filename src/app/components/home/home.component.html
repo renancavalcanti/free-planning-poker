@@ -5,55 +5,74 @@
       <p>Estimate your user stories with your team in real-time</p>
     </div>
     
-    <div class="login-section">
-      <h2>Enter your name</h2>
-      <form [formGroup]="loginForm">
-        <div class="form-group">
-          <input type="text" formControlName="userName" placeholder="Your name" autocomplete="off">
-          <div class="error-message" *ngIf="loginForm.get('userName')?.invalid && loginForm.get('userName')?.touched">
-            Name is required (min 2 characters)
+    <!-- Special view when coming from a shared link -->
+    <div *ngIf="pendingSessionId" class="shared-link-login">
+      <div class="login-section">
+        <h2>Enter your name to join the session</h2>
+        <form [formGroup]="loginForm" (ngSubmit)="joinPendingSession()">
+          <div class="form-group">
+            <input type="text" formControlName="userName" placeholder="Your name" autocomplete="off">
+            <div class="error-message" *ngIf="loginForm.get('userName')?.invalid && loginForm.get('userName')?.touched">
+              Name is required (min 2 characters)
+            </div>
           </div>
-        </div>
-      </form>
+          <button type="submit" [disabled]="loginForm.invalid" class="join-btn">Join Session</button>
+        </form>
+      </div>
     </div>
     
-    <div class="tabs">
-      <div class="tab" [class.active]="activeTab === 'join'" (click)="setActiveTab('join')">Join Session</div>
-      <div class="tab" [class.active]="activeTab === 'create'" (click)="setActiveTab('create')">Create Session</div>
-    </div>
-    
-    <div class="tab-content" *ngIf="activeTab === 'join'">
-      <h2>Join an existing session</h2>
-      <form [formGroup]="joinSessionForm" (ngSubmit)="joinSession()">
-        <div class="form-group">
-          <input type="text" formControlName="sessionId" placeholder="Session ID" autocomplete="off">
-          <div class="error-message" *ngIf="joinSessionForm.get('sessionId')?.invalid && joinSessionForm.get('sessionId')?.touched">
-            Valid session ID is required
+    <!-- Standard view -->
+    <div *ngIf="!pendingSessionId">
+      <div class="login-section">
+        <h2>Enter your name</h2>
+        <form [formGroup]="loginForm">
+          <div class="form-group">
+            <input type="text" formControlName="userName" placeholder="Your name" autocomplete="off">
+            <div class="error-message" *ngIf="loginForm.get('userName')?.invalid && loginForm.get('userName')?.touched">
+              Name is required (min 2 characters)
+            </div>
           </div>
-        </div>
-        <button type="submit" [disabled]="joinSessionForm.invalid || loginForm.invalid">Join Session</button>
-      </form>
-    </div>
-    
-    <div class="tab-content" *ngIf="activeTab === 'create'">
-      <h2>Create a new session</h2>
-      <form [formGroup]="createSessionForm" (ngSubmit)="createSession()">
-        <div class="form-group">
-          <input type="text" formControlName="sessionName" placeholder="Session Name" autocomplete="off">
-          <div class="error-message" *ngIf="createSessionForm.get('sessionName')?.invalid && createSessionForm.get('sessionName')?.touched">
-            Session name is required (min 3 characters)
+        </form>
+      </div>
+      
+      <div class="tabs">
+        <div class="tab" [class.active]="activeTab === 'join'" (click)="setActiveTab('join')">Join Session</div>
+        <div class="tab" [class.active]="activeTab === 'create'" (click)="setActiveTab('create')">Create Session</div>
+      </div>
+      
+      <div class="tab-content" *ngIf="activeTab === 'join'">
+        <h2>Join an existing session</h2>
+        <form [formGroup]="joinSessionForm" (ngSubmit)="joinSession()">
+          <div class="form-group">
+            <input type="text" formControlName="sessionId" placeholder="Session ID" autocomplete="off">
+            <div class="error-message" *ngIf="joinSessionForm.get('sessionId')?.invalid && joinSessionForm.get('sessionId')?.touched">
+              Valid session ID is required
+            </div>
           </div>
-        </div>
-        
-        <div class="form-group">
-          <label>Select Deck</label>
-          <select formControlName="deckId">
-            <option *ngFor="let deck of decks" [value]="deck.id">{{ deck.name }}</option>
-          </select>
-        </div>
-        
-        <button type="submit" [disabled]="createSessionForm.invalid || loginForm.invalid">Create Session</button>
-      </form>
+          <button type="submit" [disabled]="joinSessionForm.invalid || loginForm.invalid">Join Session</button>
+        </form>
+      </div>
+      
+      <div class="tab-content" *ngIf="activeTab === 'create'">
+        <h2>Create a new session</h2>
+        <form [formGroup]="createSessionForm" (ngSubmit)="createSession()">
+          <div class="form-group">
+            <input type="text" formControlName="sessionName" placeholder="Session Name" autocomplete="off">
+            <div class="error-message" *ngIf="createSessionForm.get('sessionName')?.invalid && createSessionForm.get('sessionName')?.touched">
+              Session name is required (min 3 characters)
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label>Select Deck</label>
+            <select formControlName="deckId">
+              <option *ngFor="let deck of decks" [value]="deck.id">{{ deck.name }}</option>
+            </select>
+          </div>
+          
+          <button type="submit" [disabled]="createSessionForm.invalid || loginForm.invalid">Create Session</button>
+        </form>
+      </div>
     </div>
   </div>
 </div> 
